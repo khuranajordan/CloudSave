@@ -24,7 +24,7 @@ export const columns: ColumnDef<FileType>[] = [
     },
   },
   {
-    accessorKey: "filename",
+    accessorKey: "fileName",
     header: "Filename",
   },
   {

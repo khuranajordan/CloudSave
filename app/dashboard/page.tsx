@@ -12,7 +12,7 @@ const Dashboard = async () => {
 
   const skeletonFiles: FileType[] = docResults.docs.map((doc) => ({
     id: doc.id,
-    fileName: doc.data().filename || doc.id,
+    fileName: doc.data().fileName || doc.id,
     timestamp: new Date(doc.data().timestamp?.seconds * 1000) || undefined,
     fullName: doc.data().fullName,
     downloadURL: doc.data().downloadURL,

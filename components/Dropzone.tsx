@@ -13,10 +13,13 @@ import {
 import { getDownloadURL, ref, uploadBytes } from "firebase/storage";
 import { useState } from "react";
 import DropzoneComponent from "react-dropzone";
+import { useToast } from "./ui/use-toast";
 
 const Dropzone = () => {
+  const { toast } = useToast();
+
   const [loading, setLoading] = useState(false);
-  const { isLoaded, isSignedIn, user } = useUser();
+  const { user } = useUser();
 
   //max file size 20MB
   const maxSize = 20971520;
@@ -41,6 +44,10 @@ const Dropzone = () => {
 
     setLoading(true);
 
+    toast({
+      description: "File is uploading...",
+    });
+
     //addDoc -> users/user12345/files
     const docRef = await addDoc(collection(db, "users", user.id, "files"), {
       userId: user.id,
@@ -54,13 +61,27 @@ const Dropzone = () => {
 
     const imageRef = ref(storage, `users/${user.id}/files/${docRef.id}`);
 
-    await uploadBytes(imageRef, selectedFile).then(async (snapshot) => {
-      const downloadURL = await getDownloadURL(imageRef);
+    try {
+      await uploadBytes(imageRef, selectedFile).then(async (snapshot) => {
+        const downloadURL = await getDownloadURL(imageRef);
 
-      await updateDoc(doc(db, "users", user.id, "files", docRef.id), {
-        downloadURL: downloadURL,
+        await updateDoc(doc(db, "users", user.id, "files", docRef.id), {
+          downloadURL: downloadURL,
+        });
       });
-    });
+
+      toast({
+        title: "Success",
+        description: "File has been uploaded successfully!",
+      });
+    } catch (error) {
+      console.error("Error in dropzone", error);
+      toast({
+        variant: "destructive",
+        title: "Uh oh! Something went wrong.",
+        description: "There was a problem with uploading the file.",
+      });
+    }
 
     setLoading(false);
   };
@@ -77,7 +98,8 @@ const Dropzone = () => {
         const isFileTooLarge =
           fileRejections.length > 0 && fileRejections[0].file.size > maxSize;
         return (
-          <section className="m-4">
+          <section className="m-4 cursor-pointer">
+            <input {...getInputProps()} />
             <div
               {...getRootProps()}
               className={cn(
